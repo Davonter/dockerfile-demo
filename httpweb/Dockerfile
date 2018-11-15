@@ -16,18 +16,23 @@ RUN mkdir -p /home/uniubi/software/temp \
     && cd /home/uniubi/software/temp/ \
     && git clone https://github.com/fdintino/nginx-upload-module.git \
     && git clone https://github.com/arut/nginx-rtmp-module.git \
-    && git clone https://github.com/masterzen/nginx-upload-progress-module.git \
     && cd /home/uniubi/software/temp/nginx-1.14.0 \
     && ./configure --add-module=/home/uniubi/software/temp/nginx-upload-module --add-module=/home/uniubi/software/temp/nginx-rtmp-module \
     && make \
     && make install
+    
+# 在/tmp目录创建临时hash阵列
+RUN mkdir -p /tmp/0 /tmp/1 /tmp/2 /tmp/3 /tmp/4 /tmp/5 /tmp/6 /tmp/7 /tmp/8 /tmp/9
 
-RUN echo "\ndaemon off;" >> /usr/local/nginx/conf/nginx.conf
+# 将nginx文件覆盖
+COPY nginx.conf /usr/local/nginx/conf/
 
+# 将cgi.cgi赋值到html目录
+COPY cgi-bin/ /usr/local/nginx/
 
 # 定义可以挂载的目录，分别为虚拟主机的挂在目录，证书目录，配置目录
-VOLUME ["/usr/local/nginx/conf", "/usr/local/nginx/html", "/opt"]
+VOLUME ["/usr/local/nginx/html", "/opt"]
 
 # 定义工作目录
 
-CMD /usr/local/nginx/sbin/nginx && /usr/bin/spawn-fcgi -f /usr/sbin/fcgiwrap -p 8081
+CMD /usr/local/nginx/sbin/nginx -g "daemon off;" && /usr/bin/spawn-fcgi -f /usr/sbin/fcgiwrap -p 8081
